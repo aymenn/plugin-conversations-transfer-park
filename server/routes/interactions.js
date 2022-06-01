@@ -3,14 +3,14 @@ const axios = require('axios');
 const FormData = require('form-data');
 const createError = require('http-errors');
 const express = require('express');
-const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+const client = require('twilio')(process.env.FLEX_APP_ACCOUNT_SID, process.env.FLEX_APP_AUTH_TOKEN);
 
 const router = express.Router();
-const { WORKSPACE_SID, WORKFLOW_SID, INTERACTION_URL, APP_URL } = process.env;
-const REINVITE_ENDPOINT = `${APP_URL}/interactions/reinvite`;
+const { FLEX_APP_WORKSPACE_SID, FLEX_APP_WORKFLOW_SID, FLEX_APP_INTERACTION_URL, FLEX_APP_URL } = process.env;
+const REINVITE_ENDPOINT = `${FLEX_APP_URL}/interactions/reinvite`;
 
 async function closeParticipant(interactionSid, channelSid, participantSid) {
-  const closeParticipantUrl = `${INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Participants/${participantSid}`;
+  const closeParticipantUrl = `${FLEX_APP_INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Participants/${participantSid}`;
   const formData = new FormData();
   formData.append('Status', 'closed');
 
@@ -20,14 +20,14 @@ async function closeParticipant(interactionSid, channelSid, participantSid) {
     data: formData,
     headers: formData.getHeaders(),
     auth: {
-      username: process.env.ACCOUNT_SID,
-      password: process.env.AUTH_TOKEN,
+      username: process.env.FLEX_APP_ACCOUNT_SID,
+      password: process.env.FLEX_APP_AUTH_TOKEN,
     },
   });
 }
 
 async function inviteParticipant(interactionSid, channelSid, workflowSid, taskChannelUniqueName, taskAttributes) {
-  const inviteUrl = `${INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Invites`;
+  const inviteUrl = `${FLEX_APP_INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Invites`;
 
   /*
    * TODO fix workspace sid
@@ -35,8 +35,8 @@ async function inviteParticipant(interactionSid, channelSid, workflowSid, taskCh
    */
   const routingBody = `{"type":"TaskRouter",
   "properties":{
-    "workspace_sid":"${WORKSPACE_SID}",
-    "worklow_sid":"${workflowSid}",
+    "workspace_sid":"${FLEX_APP_WORKSPACE_SID}",
+    "workflow_sid":"${workflowSid}",
     "task_channel_unique_name": "${taskChannelUniqueName}",
     "attributes": ${JSON.stringify(taskAttributes)} } }`;
 
@@ -50,14 +50,14 @@ async function inviteParticipant(interactionSid, channelSid, workflowSid, taskCh
     data: formData,
     headers: formData.getHeaders(),
     auth: {
-      username: process.env.ACCOUNT_SID,
-      password: process.env.AUTH_TOKEN,
+      username: process.env.FLEX_APP_ACCOUNT_SID,
+      password: process.env.FLEX_APP_AUTH_TOKEN,
     },
   });
 }
 
 async function closeParticipantAndtransfer(interactionSid, channelSid, participantSid, targetSid, taskChannelUniqueName, taskAttributes) {
-  const closeParticipantUrl = `${INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Participants/${participantSid}`
+  const closeParticipantUrl = `${FLEX_APP_INTERACTION_URL}/${interactionSid}/Channels/${channelSid}/Participants/${participantSid}`
   const formData = new FormData();
   formData.append('Status', 'closed');
 
@@ -71,7 +71,7 @@ async function closeParticipantAndtransfer(interactionSid, channelSid, participa
   console.log(`Participant closed successfully`);
 
   try {
-    const inviteResponse = await inviteParticipant(interactionSid, channelSid, WORKFLOW_SID, taskChannelUniqueName, taskAttributes);
+    const inviteResponse = await inviteParticipant(interactionSid, channelSid, FLEX_APP_WORKFLOW_SID, taskChannelUniqueName, taskAttributes);
     console.log(`Participant invited successfully`);
   } catch (err) {
     console.log(`Could not invite participant :( ${err}`)
